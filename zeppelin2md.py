@@ -22,10 +22,21 @@ def getMode(paragraph):
 def fprint(line=""):
   fout.write(line.encode("utf-8") + "\n")
 
+def writePreamble(jsonFile, githubRepository):
+  fprint(">**Note:**")
+  fprint(">This Readme has been automatically created by [zepppelin2md.py](https://github.com/bernhard-42/zeppelin2md).\n")
+  fprint(">Alternatively, to open the Zeppelin Notebook with [Zeppelin Viewer](https://www.zeppelinhub.com/viewer) use the URL ")
+  fprint(">    `https://raw.githubusercontent.com/bernhard-42/%s/master/%s`" % (githubRepository, jsonFile))
+  fprint("\n# %s" % jsonFile)
 
-note = json.load(codecs.open(sys.argv[1], 'r', 'utf-8-sig'))
+jsonFile = sys.argv[1]
+githubRepository = sys.argv[2]
+
+note = json.load(codecs.open(jsonFile, 'r', 'utf-8-sig'))
 
 with open("Readme.md", "w") as fout:
+  writePreamble(jsonFile, githubRepository)
+
   for paragraph in note["paragraphs"]:
     if "text" in paragraph.keys():
       text = paragraph["text"].split("\n")
