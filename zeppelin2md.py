@@ -6,15 +6,15 @@ import sys
 
 def getMode(paragraph):
   mode = None
-  if paragraph["config"].get("editorMode"):
-    mode = paragraph["config"].get("editorMode").split("/")[-1]
+  text = paragraph.get("text")
+  line1 = text.split("\n")[0]
+  if len(line1) > 0 and line1[0] == "%":
+    mode = line1[1:]
   else:
-    text = paragraph.get("text")
-    line1 = text.split("\n")[0]
-    if len(line1) > 0 and line1[0] == "%":
-      mode = line1[1:]
+    if paragraph["config"].get("editorMode"):
+      mode = paragraph["config"].get("editorMode").split("/")[-1]
   
-  if mode == "md":
+  if mode is None or mode == "md":
     mode = "markdown"
 
   return mode
@@ -56,7 +56,7 @@ with open("Readme.md", "w") as fout:
         text = ["%pyspark"] + text
 
       fprint("\n---\n")
-
+      
       if paragraph["config"].get("title"):
         fprint("#### %s" % paragraph["title"])
 
