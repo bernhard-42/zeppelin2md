@@ -3,6 +3,7 @@
 import json
 import codecs
 import sys
+from urllib import quote
 
 def getMode(paragraph):
   mode = None
@@ -20,19 +21,21 @@ def getMode(paragraph):
   return mode
 
 def fprint(line=""):
-  print line
+  # print line
   fout.write(line.encode("utf-8") + "\n")
 
 def writePreamble(jsonFile, githubRepository):
   fprint(">**Note:**")
   fprint(">This Readme has been automatically created by [zepppelin2md.py](https://github.com/bernhard-42/zeppelin2md).\n")
-  if githubRepository <> "":
+  if githubRepository != "":
     fprint(">Alternatively, to open the Zeppelin Notebook with [Zeppelin Viewer](https://www.zeppelinhub.com/viewer) use the URL ")
-    fprint(">    `https://raw.githubusercontent.com/bernhard-42/%s/master/%s`" % (githubRepository, jsonFile))
+    fprint(">    `https://raw.githubusercontent.com/bernhard-42/%s/master/%s`" % (githubRepository, quote(jsonFile)))
   fprint("\n# %s" % jsonFile)
 
 githubRepository = ""
 printOutput = False
+outputFile = "Code.md"
+
 
 jsonFile = sys.argv[1]
 if len(sys.argv) > 2:
@@ -40,10 +43,11 @@ if len(sys.argv) > 2:
 
 if len(sys.argv) > 3:
   printOutput = sys.argv[3] == "-o"
+  outputFile = sys.argv[4]
 
 note = json.load(codecs.open(jsonFile, 'r', 'utf-8-sig'))
 
-with open("Code.md", "w") as fout:
+with open(outputFile, "w") as fout:
   writePreamble(jsonFile, githubRepository)
 
   for paragraph in note["paragraphs"]:
@@ -76,7 +80,7 @@ with open("Code.md", "w") as fout:
           indent = ""
           if mode == "scala":
             fprint("```scala")
-          elif mode == "python":
+          elif mode == "python" or mode == "pyspark":
             fprint("```python")
           elif mode == "sh":
             fprint("```bash")
@@ -89,13 +93,25 @@ with open("Code.md", "w") as fout:
           fprint("```")
         fprint()
 
-      if printOutput and "result" in paragraph.keys():
-        if paragraph["result"]["type"] == "TEXT" and mode != "markdown":
-          if len(paragraph["result"]["msg"]) > 0:
-            fprint("\n_Result:_\n")
-            result = paragraph["result"]["msg"].split("\n")
-            fprint("```")
-            for line in result:
-              fprint(line)
-            fprint("```")
+      if printOutput:
+        if paragraph.get("results") is not None:
+          for msg in paragraph.get("results")["msg"]:
+            if msg["type"] in ["TEXT", "HTML"]  and mode != "markdown":
+              if len(msg["data"]) > 0:
+                fprint("\n_Result:_\n")
+                result = msg["data"].split("\n")
+                fprint("```")
+                for line in result:
+                  fprint(line)
+                fprint("```")
+
+      # if printOutput and "results" in paragraph.keys():
+      #   if paragraph["results"]["msg"]["type"] == "TEXT" and mode != "markdown":
+      #     if len(paragraph["results"]["msg"]) > 0:
+      #       fprint("\n_Result:_\n")
+      #       result = paragraph["results"]["msg"].split("\n")
+      #       fprint("```")
+      #       for line in result:
+      #         fprint(line)
+      #       fprint("```")
 
