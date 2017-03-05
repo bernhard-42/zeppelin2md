@@ -7,18 +7,25 @@ from urllib import quote
 
 def getMode(paragraph):
   mode = None
-  text = paragraph.get("text")
-  line1 = text.split("\n")[0]
+  text = paragraph.get("text").split("\n")
+  line1 = text[0]
   if len(line1) > 0 and line1[0] == "%":
     mode = line1[1:]
   else:
     if paragraph["config"].get("editorMode"):
       mode = paragraph["config"].get("editorMode").split("/")[-1]
   
+  imageName = None
+  if len(text) > 1:
+    line2 = text[1]
+    if len(line2) > 13:
+      if line2[0:13] == "#!zeppelin2md":
+        imageName = line2.split(":")[1]
+
   if mode is None or mode == "md":
     mode = "markdown"
 
-  return mode
+  return (mode, imageName)
 
 def fprint(line=""):
   # print line
@@ -58,7 +65,7 @@ with open(outputFile, "w") as fout:
       while len(text) > 0 and len(text[-1]) == 0:     # ... and at the end
         text = text[:-1]
       if len(text) > 0:
-        mode = getMode(paragraph)
+        mode, imageName = getMode(paragraph)
 
         if mode == "markdown":
           text = text[1:]
@@ -82,6 +89,8 @@ with open(outputFile, "w") as fout:
             fprint("```scala")
           elif mode == "python" or mode == "pyspark":
             fprint("```python")
+          elif mode == "angular":
+            fprint("```html")
           elif mode == "sh":
             fprint("```bash")
           elif mode == "dep":
@@ -94,7 +103,10 @@ with open(outputFile, "w") as fout:
         fprint()
 
       if printOutput:
-        if paragraph.get("results") is not None:
+        if imageName is not None:
+          fprint("\n_Result:_\n")
+          fprint("![%s](%s)" % (imageName, imageName))
+        elif paragraph.get("results") is not None:
           for msg in paragraph.get("results")["msg"]:
             if msg["type"] in ["TEXT", "HTML"]  and mode != "markdown":
               if len(msg["data"]) > 0:
