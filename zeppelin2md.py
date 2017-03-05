@@ -35,7 +35,7 @@ def writePreamble(jsonFile, githubRepository):
   fprint(">**Note:**")
   fprint(">This Readme has been automatically created by [zepppelin2md.py](https://github.com/bernhard-42/zeppelin2md).\n")
   if githubRepository != "":
-    fprint(">Alternatively, to open the Zeppelin Notebook with [Zeppelin Viewer](https://www.zeppelinhub.com/viewer) use the URL ")
+    fprint(">Alternatively, load into your Zeppelin instance using the URL ")
     fprint(">    `https://raw.githubusercontent.com/bernhard-42/%s/master/%s`" % (githubRepository, quote(jsonFile)))
   fprint("\n# %s" % jsonFile)
 
